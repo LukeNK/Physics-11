@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<head>
+
+</head>
+<body>
+    <p>Launch velocity: <span id="v0_out"></span></p>
+    <label>
+        Launch velocity
+        <input type="range" id="v0" onchange="updateGraph()" min="1" max="1000">
+    </label>
+    <p>Launch angle: <span id="theta_out"></span></p>
+    <label>
+        Launch angle (in degree)
+        <input type="range" id="theta" onchange="updateGraph()" min="1" max="900">
+    </label>
+    <label>
+        Target distance
+        <input type="range" id="d1x" onchange="updateGraph()" min="1" max="1000">
+    </label>
+    <canvas id="canvas" width="1000", height="500"></canvas>
+</body>
+<script>
+    const GA = -9.8067; // gravitational acceleration HAVE NEGATIVE
+
+    // programming const
+    const CANVAS = document.getElementById('canvas').getContext('2d'),
+        V0_INP = document.getElementById('v0'),
+        D1X_INP = document.getElementById('d1x'),
+        THETA_INP = document.getElementById('theta')
+        V0_OUT = document.getElementById('v0_out'),
+        THETA_OUT = document.getElementById('theta_out');
+
+    const SCALE_FACTOR = 100; // scale factor to determine 1 m = how many pixel
+    const {PI, sin, cos, sqrt} = Math;
+
+    function drawCircle(x, y, rad = 10) {
+        if (rad != 10) CANVAS.strokeStyle = "#FF0000"; // special circle
+        CANVAS.beginPath(); // start to draw
+        CANVAS.arc(x * SCALE_FACTOR, y * SCALE_FACTOR, rad, 0, 2 * PI);
+        CANVAS.stroke(); // render the path
+        // reset stroke style
+        CANVAS.strokeStyle = '#000000';
+    }
+
+    function drawGrid() {
+        CANVAS.beginPath(); // start to draw
+        for (let l1 = 0; l1 < 15; l1++) {
+            CANVAS.moveTo(0, l1 * SCALE_FACTOR);
+            CANVAS.lineTo(1000, l1 * SCALE_FACTOR);
+            CANVAS.moveTo(l1 * SCALE_FACTOR, 0);
+            CANVAS.lineTo(l1 * SCALE_FACTOR, 1000);
+        }
+        CANVAS.stroke(); // render the path
+    }
+
+    function updateGraph() {
+        // clear graph
+        CANVAS.clearRect(0, 0, 1000, 1000);
+
+        let v0 = parseFloat(V0_INP.value) / 100, theta = parseFloat(THETA_INP.value) / 10;
+        theta = theta * PI / 180; // convert theta to Radian
+        let v0x = v0 * cos(theta), v0y = v0 * sin(theta); // vector decontruction
+        // loop through dy to get dx
+        for (let t = 0; t < 100; t += 0.01) {
+            let dx = v0x * t,
+                dy = v0y * t + 0.5 * GA * t*t;
+            drawCircle(dx, dy)
+            if (dy < 0) break
+        }
+        // update target
+        CANVAS.beginPath();
+        CANVAS.moveTo(D1X_INP.value, 0);
+        CANVAS.lineTo(D1X_INP.value, 1000);
+        CANVAS.stroke();
+        {
+            // calculate the target hit
+            let dx1 = D1X_INP.value / 100;
+            let t = dx1 / v0x;
+            let dy = v0y * t + 0.5 * GA * t*t;
+            drawCircle(dx1, dy, 50)
+            console.log(`Hit at ${dx1}`)
+        }
+        // update display
+        drawGrid()
+        V0_OUT.innerHTML = V0_INP.value / 100;
+        THETA_OUT.innerHTML = THETA_INP.value / 10;
+    }
+</script>
