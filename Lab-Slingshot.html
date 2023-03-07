@@ -3,19 +3,23 @@
 
 </head>
 <body>
-    <p>Launch velocity: <span id="v0_out"></span></p>
+    <p>Launch velocity: <span id="v0_out"></span>m/s</p>
     <label>
-        Launch velocity
-        <input type="range" id="v0" onchange="updateGraph()" min="1" max="1000">
+        Launch velocity (mm/s)
+        <input type="number" id="v0" onchange="runResult()">
     </label>
-    <p>Launch angle: <span id="theta_out"></span></p>
+    <p>Launch angle: <span id="theta_out"></span> degree</p>
     <label>
-        Launch angle (in degree)
-        <input type="range" id="theta" onchange="updateGraph()" min="1" max="900">
+        Launch angle (in degree) * 10
+        <input type="number" id="theta" onchange="runResult()">
     </label>
     <label>
-        Target distance
-        <input type="range" id="d1x" onchange="updateGraph()" min="1" max="1000">
+        Target distance (in cm)
+        <input type="number" id="d1x" onchange="runResult()">
+    </label>
+    <label>
+        Target height (in cm)
+        <input type="number" id="d1y" onchange="runResult()">
     </label>
     <canvas id="canvas" width="1000", height="500"></canvas>
 </body>
@@ -26,15 +30,27 @@
     const CANVAS = document.getElementById('canvas').getContext('2d'),
         V0_INP = document.getElementById('v0'),
         D1X_INP = document.getElementById('d1x'),
+        D1Y_INP = document.getElementById('d1y'),
         THETA_INP = document.getElementById('theta')
         V0_OUT = document.getElementById('v0_out'),
         THETA_OUT = document.getElementById('theta_out');
 
     const SCALE_FACTOR = 100; // scale factor to determine 1 m = how many pixel
-    const {PI, sin, cos, sqrt} = Math;
+    const {PI, abs, sin, cos, sqrt, max, min} = Math;
 
-    function drawCircle(x, y, rad = 10) {
-        if (rad != 10) CANVAS.strokeStyle = "#FF0000"; // special circle
+    // global value
+    let v0 = parseFloat(V0_INP.value) / 100, theta = parseFloat(THETA_INP.value) / 10;
+        theta = theta * PI / 180; // convert theta to Radian
+    let v0x = v0 * cos(theta), v0y = v0 * sin(theta); // vector decontruction
+    function parseInp() {
+        v0 = parseFloat(V0_INP.value) / 100;
+        theta = parseFloat(THETA_INP.value) / 10; theta = theta * PI / 180; // convert theta to Radian
+        v0x = v0 * cos(theta);
+        v0y = v0 * sin(theta); // vector decontruction
+    }
+
+    function drawCircle(x, y, rad = 1) {
+        if (rad != 1) CANVAS.strokeStyle = "#FF0000"; // special circle
         CANVAS.beginPath(); // start to draw
         CANVAS.arc(x * SCALE_FACTOR, y * SCALE_FACTOR, rad, 0, 2 * PI);
         CANVAS.stroke(); // render the path
@@ -53,19 +69,49 @@
         CANVAS.stroke(); // render the path
     }
 
+    function runResult() {
+        parseInp()
+        if (V0_INP.value && THETA_INP.value) {
+            // all are ready
+            updateGraph();
+        }
+        if (!D1X_INP.value || !D1Y_INP.value) return; // must have dx1 to continue
+        if (!V0_INP.value && THETA_INP.value) {
+            // find v0 from theta
+            
+        } else if (V0_INP.value && !THETA_INP.value) {
+            let minMiss = Infinity, minMissTheta = 0;
+            let targetDy = D1Y_INP.value;
+            for (
+                THETA_INP.value = 0; 
+                THETA_INP.value < 900; 
+                THETA_INP.value = parseInt(THETA_INP.value) + 1
+            ) {
+                // trial and error
+                updateGraph();
+                let amiss = abs(targetDy - D1Y_INP.value)
+                if (amiss < minMiss) {
+                    minMiss = amiss;
+                    minMissTheta = theta;
+                }
+            }
+            THETA_INP.value = minMissTheta * 180/PI * 10;
+            updateGraph()
+        }
+    }
+
+
     function updateGraph() {
         // clear graph
         CANVAS.clearRect(0, 0, 1000, 1000);
 
-        let v0 = parseFloat(V0_INP.value) / 100, theta = parseFloat(THETA_INP.value) / 10;
-        theta = theta * PI / 180; // convert theta to Radian
-        let v0x = v0 * cos(theta), v0y = v0 * sin(theta); // vector decontruction
-        // loop through dy to get dx
+        parseInp();
+        // loop through t to get d1
         for (let t = 0; t < 100; t += 0.01) {
             let dx = v0x * t,
                 dy = v0y * t + 0.5 * GA * t*t;
-            drawCircle(dx, dy)
-            if (dy < 0) break
+            drawCircle(dx, dy);
+            if (dy < 0) break;
         }
         // update target
         CANVAS.beginPath();
@@ -78,7 +124,7 @@
             let t = dx1 / v0x;
             let dy = v0y * t + 0.5 * GA * t*t;
             drawCircle(dx1, dy, 50)
-            console.log(`Hit at ${dx1}`)
+            D1Y_INP.value = dy * 100;
         }
         // update display
         drawGrid()
