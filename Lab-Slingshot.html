@@ -5,24 +5,21 @@
 <body>
     <label>
         Launch velocity (m/s)
-        <input type="number" id="v0" onchange="runResult()">
+        <input type="number" id="v0">
     </label>
     <label>
         Launch angle (in degree)
-        <input type="number" id="theta" onchange="runResult()">
+        <input type="number" id="theta">
     </label>
     <label>
         Target distance (in cm)
-        <input type="number" id="d1x" onchange="runResult()">
+        <input type="number" id="d1x">
     </label>
     <label>
         Target height (in cm)
-        <input type="number" id="d1y" onchange="runResult()">
+        <input type="number" id="d1y">
     </label>
-    <label>
-        Update graph
-        <input type="checkbox" id="updateGraph" checked> 
-    </label>
+    <button onclick="runResult()">Update graph</button>
     <canvas id="canvas" width="1000", height="500"></canvas>
 </body>
 <script>
@@ -71,7 +68,6 @@
 
     function runResult() {
         // check if user want to update graph
-        if (!document.getElementById('updateGraph').checked) return;
         parseInp()
         if (V0_INP.value && THETA_INP.value) {
             // all are ready
