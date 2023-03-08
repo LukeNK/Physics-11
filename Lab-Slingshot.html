@@ -3,14 +3,12 @@
 
 </head>
 <body>
-    <p>Launch velocity: <span id="v0_out"></span>m/s</p>
     <label>
-        Launch velocity (mm/s)
+        Launch velocity (m/s)
         <input type="number" id="v0" onchange="runResult()">
     </label>
-    <p>Launch angle: <span id="theta_out"></span> degree</p>
     <label>
-        Launch angle (in degree) * 10
+        Launch angle (in degree)
         <input type="number" id="theta" onchange="runResult()">
     </label>
     <label>
@@ -20,6 +18,10 @@
     <label>
         Target height (in cm)
         <input type="number" id="d1y" onchange="runResult()">
+    </label>
+    <label>
+        Update graph
+        <input type="checkbox" id="updateGraph" checked> 
     </label>
     <canvas id="canvas" width="1000", height="500"></canvas>
 </body>
@@ -31,20 +33,18 @@
         V0_INP = document.getElementById('v0'),
         D1X_INP = document.getElementById('d1x'),
         D1Y_INP = document.getElementById('d1y'),
-        THETA_INP = document.getElementById('theta')
-        V0_OUT = document.getElementById('v0_out'),
-        THETA_OUT = document.getElementById('theta_out');
+        THETA_INP = document.getElementById('theta');
 
     const SCALE_FACTOR = 100; // scale factor to determine 1 m = how many pixel
     const {PI, abs, sin, cos, sqrt, max, min} = Math;
 
     // global value
-    let v0 = parseFloat(V0_INP.value) / 100, theta = parseFloat(THETA_INP.value) / 10;
+    let v0 = 0, theta = 0;
         theta = theta * PI / 180; // convert theta to Radian
-    let v0x = v0 * cos(theta), v0y = v0 * sin(theta); // vector decontruction
+    let v0x = 0, v0y = 0; // vector decontruction
     function parseInp() {
-        v0 = parseFloat(V0_INP.value) / 100;
-        theta = parseFloat(THETA_INP.value) / 10; theta = theta * PI / 180; // convert theta to Radian
+        v0 = parseFloat(V0_INP.value);
+        theta = parseFloat(THETA_INP.value); theta = theta * PI / 180; // convert theta to Radian
         v0x = v0 * cos(theta);
         v0y = v0 * sin(theta); // vector decontruction
     }
@@ -70,6 +70,8 @@
     }
 
     function runResult() {
+        // check if user want to update graph
+        if (!document.getElementById('updateGraph').checked) return;
         parseInp()
         if (V0_INP.value && THETA_INP.value) {
             // all are ready
@@ -78,14 +80,29 @@
         if (!D1X_INP.value || !D1Y_INP.value) return; // must have dx1 to continue
         if (!V0_INP.value && THETA_INP.value) {
             // find v0 from theta
-            
+            let minMiss = Infinity, minMissV0 = 0;
+            let targetDy = D1Y_INP.value;
+            for (
+                V0_INP.value = 1;
+                V0_INP.value < 50;
+                V0_INP.value = parseFloat(V0_INP.value) + 0.1
+            ) {
+                updateGraph();
+                let amiss = abs(targetDy - D1Y_INP.value)
+                if (amiss < minMiss) {
+                    minMiss = amiss;
+                    minMissV0 = v0;
+                }
+            }
+            V0_INP.value = minMissV0;
+            updateGraph()
         } else if (V0_INP.value && !THETA_INP.value) {
             let minMiss = Infinity, minMissTheta = 0;
             let targetDy = D1Y_INP.value;
             for (
                 THETA_INP.value = 0; 
-                THETA_INP.value < 900; 
-                THETA_INP.value = parseInt(THETA_INP.value) + 1
+                THETA_INP.value < 90; 
+                THETA_INP.value = parseFloat(THETA_INP.value) + 0.1
             ) {
                 // trial and error
                 updateGraph();
@@ -95,7 +112,7 @@
                     minMissTheta = theta;
                 }
             }
-            THETA_INP.value = minMissTheta * 180/PI * 10;
+            THETA_INP.value = minMissTheta * 180/PI;
             updateGraph()
         }
     }
@@ -128,7 +145,5 @@
         }
         // update display
         drawGrid()
-        V0_OUT.innerHTML = V0_INP.value / 100;
-        THETA_OUT.innerHTML = THETA_INP.value / 10;
     }
 </script>
