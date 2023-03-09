@@ -3,6 +3,11 @@
 
 </head>
 <body>
+    <ul>
+        <li>Board launch math (board length, board height, board raise, slingshot height)</li>
+        <li><s>Dmax</s></li>
+        <li>Time</li>
+    </ul>
     <label>
         Launch velocity (m/s)
         <input type="number" id="v0">
@@ -113,20 +118,26 @@
         }
     }
 
-
     function updateGraph() {
         // clear graph
         CANVAS.clearRect(0, 0, 1000, 1000);
 
         parseInp();
         // loop through t to get d1
+        let dyMax = 0;
         for (let t = 0; t < 100; t += 0.01) {
             let dx = v0x * t,
                 dy = v0y * t + 0.5 * GA * t*t;
+            if (dy > dyMax) dyMax = dy;
             drawCircle(dx, dy);
             if (dy < 0) break;
         }
+        CANVAS.beginPath();
+        CANVAS.moveTo(0, dyMax * SCALE_FACTOR);
+        CANVAS.lineTo(1000, dyMax * SCALE_FACTOR);
+        CANVAS.stroke();
         // update target
+        CANVAS.strokeStyle = "#FF0000";
         CANVAS.beginPath();
         CANVAS.moveTo(D1X_INP.value, 0);
         CANVAS.lineTo(D1X_INP.value, 1000);
