@@ -5,7 +5,7 @@
 <body>
     <ul>
         <li>Board launch math (board length, board height, board raise, slingshot height)</li>
-        <li><s>Dmax</s></li>
+        <li>Dmax: <span id="dmax"></span></li>
         <li>Time</li>
     </ul>
     <label>
@@ -35,7 +35,8 @@
         V0_INP = document.getElementById('v0'),
         D1X_INP = document.getElementById('d1x'),
         D1Y_INP = document.getElementById('d1y'),
-        THETA_INP = document.getElementById('theta');
+        THETA_INP = document.getElementById('theta'),
+        DMAX_OUT = document.getElementById('dmax');
 
     const SCALE_FACTOR = 100; // scale factor to determine 1 m = how many pixel
     const {PI, abs, sin, cos, sqrt, max, min} = Math;
@@ -61,6 +62,7 @@
     }
 
     function drawGrid() {
+        CANVAS.strokeStyle = "#000000";
         CANVAS.beginPath(); // start to draw
         for (let l1 = 0; l1 < 15; l1++) {
             CANVAS.moveTo(0, l1 * SCALE_FACTOR);
@@ -132,24 +134,28 @@
             drawCircle(dx, dy);
             if (dy < 0) break;
         }
+        // dmax
+        CANVAS.strokeStyle = "#00FF00";
         CANVAS.beginPath();
         CANVAS.moveTo(0, dyMax * SCALE_FACTOR);
         CANVAS.lineTo(1000, dyMax * SCALE_FACTOR);
         CANVAS.stroke();
+        DMAX_OUT.innerHTML = dyMax * SCALE_FACTOR;
         // update target
         CANVAS.strokeStyle = "#FF0000";
         CANVAS.beginPath();
         CANVAS.moveTo(D1X_INP.value, 0);
         CANVAS.lineTo(D1X_INP.value, 1000);
-        CANVAS.stroke();
         {
             // calculate the target hit
             let dx1 = D1X_INP.value / 100;
             let t = dx1 / v0x;
             let dy = v0y * t + 0.5 * GA * t*t;
-            drawCircle(dx1, dy, 50)
+            CANVAS.moveTo(0, dy * SCALE_FACTOR);
+            CANVAS.lineTo(1000, dy * SCALE_FACTOR);
             D1Y_INP.value = dy * 100;
         }
+        CANVAS.stroke();
         // update display
         drawGrid()
     }
