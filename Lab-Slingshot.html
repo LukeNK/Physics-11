@@ -33,6 +33,10 @@
         </tr>
         <tr>
             <td><input type="checkbox"></td>
+            <td>Input slingshot constants (SLING_Y)</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox"></td>
             <td>Scale factor (x and y)</td>
         </tr>
         <tr>
@@ -59,7 +63,6 @@
         <tr>
             <td>Target distance (in m)</td>
             <td><input type="number" id="d1x"></td>
-            <td>Noted that this field automatically update to match the platform displacement when user-inputed</td>
         </tr>
         <tr>
             <td>Target height (in m)</td>
@@ -71,14 +74,16 @@
             </td>
         </tr>
     </table>
+
     <canvas id="canvas" width="1000", height="600"></canvas>
     <p>Each dot represents 0.01 seconds (10 ms) interval. The green line is dmax, the red line is the target.</p>
 </body>
 <script>
     // Physics const (aka hardware real number that as a programmer I understand nothing)
     const GA = -9.8067; // gravitational acceleration HAVE NEGATIVE
-    const BASE_X = 1, // The length of the launch platform
-        BASE_Y = 1; // the height of the base of the platform
+    const BASE_X = 2, // The length of the launch platform
+        BASE_Y = 2, // the height of the base of the platform
+        SLING_Y = 1; // Slingshot height from its own base
     let PLAT_X = 0, // use platform X to calculate 
         PLAT_Y = 0; // Platform Y must be calculated from theta and BASE_X + BASE_Y
 
@@ -95,7 +100,7 @@
     const SCALE_FACTORX = 100; // scale factor to determine 1 m = how many pixel
     const SCALE_FACTORY = -100; // scale factor negative to flip the graph
     CANVAS.translate(0, CANVAS.height); // translate the graph according to the height of the canvas
-    const {PI, abs, sin, cos, sqrt, max, min, floor} = Math;
+    const {PI, abs, sin, cos, tan, sqrt, max, min, floor} = Math;
 
     // global value
     let v0 = 0, theta = 0;
@@ -106,9 +111,15 @@
         theta = parseFloat(THETA_INP.value); theta = theta * PI / 180; // convert theta to Radian
         v0x = v0 * cos(theta);
         v0y = v0 * sin(theta); // vector decontruction
-        // calculate base height
-        PLAT_X = cos(theta) * BASE_X
-        PLAT_Y = BASE_Y + sin(theta) * BASE_X;
+        // calculate platform height
+        {
+            // Because of trig (duh), the angle created by the slingshot is the same as theta
+            // true base is the result of original base minus the side that was created by the SLING_Y
+            let trueBase = BASE_X - tan(theta) * SLING_Y;
+            PLAT_X = cos(theta) * trueBase;
+            // PLAT_X act as the adjacent angle of theta, now add the last side of slingshot triangle
+            PLAT_Y = BASE_Y + sin(theta) * trueBase + SLING_Y / cos(theta);
+        }
     }
 
     function drawLine(x0, y0, x1, y1, color = '#000000') {
@@ -203,7 +214,8 @@
             let dx = v0x * t,
                 dy = v0y * t + 0.5 * GA * t*t + PLAT_Y;
             if (dy > dyMax) dyMax = dy;
-            drawCircle(dx + PLAT_X, dy);
+            // special circle for the first one
+            drawCircle(dx + PLAT_X, dy, (t)? 1: 10);
             if (dy < 0) break;
         }
         // dmax
@@ -231,7 +243,27 @@
             );
             D1Y_INP.value = dy;
         }
-        // update display
+        // update initial displacement
+        {
+            // Tip of the platform
+            let xTip = cos(theta) * BASE_X, yTip = BASE_Y + sin(theta) * BASE_X;
+            drawLine(
+                0, BASE_Y,
+                xTip, yTip,
+                '#C300ff'
+            )
+            drawLine(
+                xTip, yTip,
+                PLAT_X, PLAT_Y,
+                '#C300ff'
+            )
+            drawLine(
+                0, 0,
+                PLAT_X, PLAT_Y,
+                '#00FFFF'
+            )
+        }
+        // update grid
         drawGrid()
     }
 
