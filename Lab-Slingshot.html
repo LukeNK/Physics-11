@@ -52,7 +52,9 @@
         THETA_INP = document.getElementById('theta'),
         DMAX_OUT = document.getElementById('dmax');
 
-    const SCALE_FACTOR = 100; // scale factor to determine 1 m = how many pixel
+    const SCALE_FACTORX = 100; // scale factor to determine 1 m = how many pixel
+    const SCALE_FACTORY = -100; // scale factor to determine 1 m = how many pixel
+    CANVAS.translate(0, 500)
     const {PI, abs, sin, cos, sqrt, max, min, floor} = Math;
 
     // global value
@@ -69,20 +71,21 @@
     function drawCircle(x, y, rad = 1) {
         if (rad != 1) CANVAS.strokeStyle = "#FF0000"; // special circle
         CANVAS.beginPath(); // start to draw
-        CANVAS.arc(x * SCALE_FACTOR, y * SCALE_FACTOR, rad, 0, 2 * PI);
+        CANVAS.arc(x * SCALE_FACTORX, y * SCALE_FACTORY, rad, 0, 2 * PI);
         CANVAS.stroke(); // render the path
         // reset stroke style
         CANVAS.strokeStyle = '#000000';
     }
 
     function drawGrid() {
+        // I have no idea how these "magic numbers" work
         CANVAS.strokeStyle = "#000000";
         CANVAS.beginPath(); // start to draw
         for (let l1 = 0; l1 < 15; l1++) {
-            CANVAS.moveTo(0, l1 * SCALE_FACTOR);
-            CANVAS.lineTo(1000, l1 * SCALE_FACTOR);
-            CANVAS.moveTo(l1 * SCALE_FACTOR, 0);
-            CANVAS.lineTo(l1 * SCALE_FACTOR, 1000);
+            CANVAS.moveTo(l1 * SCALE_FACTORX, 0);
+            CANVAS.lineTo(l1 * SCALE_FACTORX, -1000);
+            CANVAS.moveTo(0, l1 * SCALE_FACTORY);
+            CANVAS.lineTo(1000, l1 * SCALE_FACTORY);
         }
         CANVAS.stroke(); // render the path
     }
@@ -136,7 +139,7 @@
 
     function updateGraph() {
         // clear graph
-        CANVAS.clearRect(0, 0, 1000, 1000);
+        CANVAS.clearRect(0, 0, 1000 * SCALE_FACTORX, 1000 * SCALE_FACTORY);
 
         parseInp();
         // loop through t to get d1
@@ -151,22 +154,22 @@
         // dmax
         CANVAS.strokeStyle = "#00FF00";
         CANVAS.beginPath();
-        CANVAS.moveTo(0, dyMax * SCALE_FACTOR);
-        CANVAS.lineTo(1000, dyMax * SCALE_FACTOR);
+        CANVAS.moveTo(0, dyMax * SCALE_FACTORY);
+        CANVAS.lineTo(1000, dyMax * SCALE_FACTORY);
         CANVAS.stroke();
         DMAX_OUT.innerHTML = dyMax.toFixed(3);
         // update target
         CANVAS.strokeStyle = "#FF0000";
         CANVAS.beginPath();
-        CANVAS.moveTo(D1X_INP.value * SCALE_FACTOR, 0);
-        CANVAS.lineTo(D1X_INP.value * SCALE_FACTOR, 1000);
+        CANVAS.moveTo(D1X_INP.value * SCALE_FACTORX, 0);
+        CANVAS.lineTo(D1X_INP.value * SCALE_FACTORX, -1000);
         {
             // calculate the target hit
             let dx1 = D1X_INP.value;
             let t = dx1 / v0x;
             let dy = v0y * t + 0.5 * GA * t*t;
-            CANVAS.moveTo(0, dy * SCALE_FACTOR);
-            CANVAS.lineTo(1000, dy * SCALE_FACTOR);
+            CANVAS.moveTo(0, dy * SCALE_FACTORY);
+            CANVAS.lineTo(1000, dy * SCALE_FACTORY);
             D1Y_INP.value = dy;
         }
         CANVAS.stroke();
