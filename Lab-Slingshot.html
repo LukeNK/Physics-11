@@ -1,6 +1,12 @@
+<!-- I AM VERY SORRY FOR THIS TERRIBLE AND IMPOSSIBLE TO UNDERSTAND CODE -->
 <!DOCTYPE html>
 <head>
-
+    <title>Slingshot calculator</title>
+    <style>
+        button {
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
     <ul>
@@ -8,27 +14,35 @@
         <li>Dmax: <span id="dmax"></span> m</li>
         <li>Time</li>
     </ul>
-    <label>
-        Launch velocity (m/s)
-        <input type="number" id="v0">
-    </label>
-    <label>
-        Launch angle (in degree)
-        <input type="number" id="theta">
-    </label>
-    <label>
-        Target distance (in m)
-        <input type="number" id="d1x">
-    </label>
-    <label>
-        Target height (in m)
-        <input type="number" id="d1y">
-    </label>
-    <button onclick="runResult()">Update graph</button>
+    <table>
+        <tr>
+            <td>Launch velocity (m/s)</td>
+            <td><input type="number" id="v0"></td>
+        </tr>
+        <tr>
+            <td>Launch angle (in degree)</td>
+            <td><input type="number" id="theta"></td>
+        </tr>
+        <tr>
+            <td>Target distance (in m)</td>
+            <td><input type="number" id="d1x"></td>
+        </tr>
+        <tr>
+            <td>Target height (in m)</td>
+            <td><input type="number" id="d1y"></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <button onclick="runResult()">Update graph</button>
+            </td>
+        </tr>
+    </table>
     <canvas id="canvas" width="1000", height="500"></canvas>
+    <p>Each dot represents 0.01 seconds (10 ms) interval</p>
 </body>
 <script>
-    const GA = -9.8067; // gravitational acceleration HAVE NEGATIVE
+    const GA = -9.8067, // gravitational acceleration HAVE NEGATIVE
+        baseHeight = 0.087; // the height of the base of the platform
 
     // programming const
     const CANVAS = document.getElementById('canvas').getContext('2d'),
@@ -163,7 +177,7 @@
     // repeat for the loading screen
     let loadingV0 = 5, loadingTheta = 45;
     let loadingInterval = setInterval(() => {
-        V0_INP.value = (loadingV0 % 20).toFixed(2); THETA_INP.value = loadingTheta % 90;
+        V0_INP.value = (loadingV0 % 15).toFixed(2); THETA_INP.value = loadingTheta % 90;
         loadingV0 += 0.1; loadingTheta++
         runResult()
     }, 100);
