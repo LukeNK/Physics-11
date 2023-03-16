@@ -3,12 +3,45 @@
 <head>
     <title>Slingshot calculator</title>
     <style>
+        #checklist {
+            border-collapse: collapse;
+        }
+        #checklist td {
+            border: 1px solid black;
+        }
         button {
             width: 100%;
         }
     </style>
 </head>
 <body>
+    <h1>Launch checklist</h1>
+    <table id="checklist">
+        <tr>
+            <td colspan="2">Slingshot</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox"></td>
+            <td>Test speed latches to get v0</td>
+        </tr>
+        <tr>
+            <td colspan="2">Calculator</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox"></td>
+            <td>Input launch platform constants (BASE_X, BASE_Y)</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox"></td>
+            <td>Scale factor (x and y)</td>
+        </tr>
+        <tr>
+            <td><input type="checkbox"></td>
+            <td>Scale factor (x and y)</td>
+        </tr>
+    </table>
+
+    <h1>Calculator</h1>
     <ul>
         <li>Board launch math (board length, board height, board raise, slingshot height)</li>
         <li>Dmax: <span id="dmax"></span> m</li>
@@ -188,7 +221,7 @@
         );
         {
             // calculate the target hit
-            let dx1 = D1X_INP.value; // at PLAT_X here somehow
+            let dx1 = parseFloat(D1X_INP.value || 1) - PLAT_X; // at PLAT_X here somehow
             let t = dx1 / v0x;
             let dy = v0y * t + 0.5 * GA * t*t + PLAT_Y;
             drawLine(
