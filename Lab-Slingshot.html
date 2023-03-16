@@ -47,11 +47,15 @@
 
     <h1>Calculator</h1>
     <ul>
-        <li>Board launch math (board length, board height, board raise, slingshot height)</li>
+        <li><s>Board launch math (board length, board height, board raise, slingshot height)</s></li>
         <li>Dmax: <span id="dmax"></span> m</li>
         <li>Time</li>
     </ul>
     <table>
+        <tr>
+            <td>Scale factor (1m = ? pixel)</td>
+            <td><input type="number" id="scale" value="100"></td>
+        </tr>
         <tr>
             <td>Launch velocity (m/s)</td>
             <td><input type="number" id="v0"></td>
@@ -76,19 +80,20 @@
     </table>
 
     <canvas id="canvas" width="1000", height="600"></canvas>
-    <p>Each dot represents 0.01 seconds (10 ms) interval. The green line is dmax, the red line is the target.</p>
+    <p>Each dot represents 0.01 seconds (10 ms) interval. The green line is dmax, the red line is the target, purple is the launch platform and the slingshot.</p>
 </body>
 <script>
     // Physics const (aka hardware real number that as a programmer I understand nothing)
     const GA = -9.8067; // gravitational acceleration HAVE NEGATIVE
-    const BASE_X = 2, // The length of the launch platform
-        BASE_Y = 2, // the height of the base of the platform
-        SLING_Y = 1; // Slingshot height from its own base
+    const BASE_X = 0.3, // The length of the launch platform
+        BASE_Y = 0.087, // the height of the base of the platform
+        SLING_Y = 0.1; // Slingshot height from its own base
     let PLAT_X = 0, // use platform X to calculate 
         PLAT_Y = 0; // Platform Y must be calculated from theta and BASE_X + BASE_Y
 
     // programming const
     const CANVAS = document.getElementById('canvas').getContext('2d'),
+        SCALE_INP = document.getElementById('scale'),
         V0_INP = document.getElementById('v0'),
         D1X_INP = document.getElementById('d1x'),
         D1Y_INP = document.getElementById('d1y'),
@@ -97,8 +102,9 @@
     CANVAS.width = document.getElementById('canvas').width;
     CANVAS.height = document.getElementById('canvas').height;
 
-    const SCALE_FACTORX = 100; // scale factor to determine 1 m = how many pixel
-    const SCALE_FACTORY = -100; // scale factor negative to flip the graph
+    let SCALE_FACTOR = 500;
+    let SCALE_FACTORX = 0; 
+    let SCALE_FACTORY = 0;
     CANVAS.translate(0, CANVAS.height); // translate the graph according to the height of the canvas
     const {PI, abs, sin, cos, tan, sqrt, max, min, floor} = Math;
 
@@ -107,6 +113,7 @@
         theta = theta * PI / 180; // convert theta to Radian
     let v0x = 0, v0y = 0; // vector decontruction
     function parseInp() {
+        // physics variable
         v0 = parseFloat(V0_INP.value);
         theta = parseFloat(THETA_INP.value); theta = theta * PI / 180; // convert theta to Radian
         v0x = v0 * cos(theta);
@@ -120,6 +127,10 @@
             // PLAT_X act as the adjacent angle of theta, now add the last side of slingshot triangle
             PLAT_Y = BASE_Y + sin(theta) * trueBase + SLING_Y / cos(theta);
         }
+        // scale factor (determine 1 m = how many pixel)
+        SCALE_FACTOR = parseInt(SCALE_INP.value);
+        SCALE_FACTORX = SCALE_FACTOR;
+        SCALE_FACTORY = -SCALE_FACTOR; // scale factor negative to flip the graph
     }
 
     function drawLine(x0, y0, x1, y1, color = '#000000') {
@@ -215,7 +226,7 @@
                 dy = v0y * t + 0.5 * GA * t*t + PLAT_Y;
             if (dy > dyMax) dyMax = dy;
             // special circle for the first one
-            drawCircle(dx + PLAT_X, dy, (t)? 1: 10);
+            drawCircle(dx + PLAT_X, dy);
             if (dy < 0) break;
         }
         // dmax
@@ -251,17 +262,12 @@
                 0, BASE_Y,
                 xTip, yTip,
                 '#C300ff'
-            )
+            );
             drawLine(
                 xTip, yTip,
                 PLAT_X, PLAT_Y,
                 '#C300ff'
-            )
-            drawLine(
-                0, 0,
-                PLAT_X, PLAT_Y,
-                '#00FFFF'
-            )
+            );
         }
         // update grid
         drawGrid()
