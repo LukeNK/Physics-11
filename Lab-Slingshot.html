@@ -37,8 +37,8 @@
             </td>
         </tr>
     </table>
-    <canvas id="canvas" width="1000", height="500"></canvas>
-    <p>Each dot represents 0.01 seconds (10 ms) interval</p>
+    <canvas id="canvas" width="1000", height="600"></canvas>
+    <p>Each dot represents 0.01 seconds (10 ms) interval. The green line is dmax, the red line is the target.</p>
 </body>
 <script>
     const GA = -9.8067, // gravitational acceleration HAVE NEGATIVE
@@ -51,10 +51,12 @@
         D1Y_INP = document.getElementById('d1y'),
         THETA_INP = document.getElementById('theta'),
         DMAX_OUT = document.getElementById('dmax');
+    CANVAS.width = document.getElementById('canvas').width;
+    CANVAS.height = document.getElementById('canvas').height;
 
     const SCALE_FACTORX = 100; // scale factor to determine 1 m = how many pixel
-    const SCALE_FACTORY = -100; // scale factor to determine 1 m = how many pixel
-    CANVAS.translate(0, 500)
+    const SCALE_FACTORY = -100; // scale factor negative to flip the graph
+    CANVAS.translate(0, CANVAS.height); // translate the graph according to the height of the canvas
     const {PI, abs, sin, cos, sqrt, max, min, floor} = Math;
 
     // global value
@@ -81,11 +83,15 @@
         // I have no idea how these "magic numbers" work
         CANVAS.strokeStyle = "#000000";
         CANVAS.beginPath(); // start to draw
-        for (let l1 = 0; l1 < 15; l1++) {
+        for (
+            let l1 = 0; 
+            l1 * SCALE_FACTORX <= CANVAS.width; // Stop when width out-of-frame
+            l1++
+        ) {
             CANVAS.moveTo(l1 * SCALE_FACTORX, 0);
-            CANVAS.lineTo(l1 * SCALE_FACTORX, -1000);
+            CANVAS.lineTo(l1 * SCALE_FACTORX, -CANVAS.height);
             CANVAS.moveTo(0, l1 * SCALE_FACTORY);
-            CANVAS.lineTo(1000, l1 * SCALE_FACTORY);
+            CANVAS.lineTo(CANVAS.width, l1 * SCALE_FACTORY);
         }
         CANVAS.stroke(); // render the path
     }
@@ -139,7 +145,7 @@
 
     function updateGraph() {
         // clear graph
-        CANVAS.clearRect(0, 0, 1000 * SCALE_FACTORX, 1000 * SCALE_FACTORY);
+        CANVAS.clearRect(0, 0, CANVAS.width * SCALE_FACTORX, CANVAS.height * SCALE_FACTORY);
 
         parseInp();
         // loop through t to get d1
@@ -155,21 +161,21 @@
         CANVAS.strokeStyle = "#00FF00";
         CANVAS.beginPath();
         CANVAS.moveTo(0, dyMax * SCALE_FACTORY);
-        CANVAS.lineTo(1000, dyMax * SCALE_FACTORY);
+        CANVAS.lineTo(CANVAS.width, dyMax * SCALE_FACTORY);
         CANVAS.stroke();
         DMAX_OUT.innerHTML = dyMax.toFixed(3);
         // update target
         CANVAS.strokeStyle = "#FF0000";
         CANVAS.beginPath();
         CANVAS.moveTo(D1X_INP.value * SCALE_FACTORX, 0);
-        CANVAS.lineTo(D1X_INP.value * SCALE_FACTORX, -1000);
+        CANVAS.lineTo(D1X_INP.value * SCALE_FACTORX, -CANVAS.height);
         {
             // calculate the target hit
             let dx1 = D1X_INP.value;
             let t = dx1 / v0x;
             let dy = v0y * t + 0.5 * GA * t*t;
             CANVAS.moveTo(0, dy * SCALE_FACTORY);
-            CANVAS.lineTo(1000, dy * SCALE_FACTORY);
+            CANVAS.lineTo(CANVAS.width, dy * SCALE_FACTORY);
             D1Y_INP.value = dy;
         }
         CANVAS.stroke();
