@@ -5,7 +5,7 @@
 <body>
     <ul>
         <li>Board launch math (board length, board height, board raise, slingshot height)</li>
-        <li>Dmax: <span id="dmax"></span></li>
+        <li>Dmax: <span id="dmax"></span> m</li>
         <li>Time</li>
     </ul>
     <label>
@@ -17,11 +17,11 @@
         <input type="number" id="theta">
     </label>
     <label>
-        Target distance (in cm)
+        Target distance (in m)
         <input type="number" id="d1x">
     </label>
     <label>
-        Target height (in cm)
+        Target height (in m)
         <input type="number" id="d1y">
     </label>
     <button onclick="runResult()">Update graph</button>
@@ -39,7 +39,7 @@
         DMAX_OUT = document.getElementById('dmax');
 
     const SCALE_FACTOR = 100; // scale factor to determine 1 m = how many pixel
-    const {PI, abs, sin, cos, sqrt, max, min} = Math;
+    const {PI, abs, sin, cos, sqrt, max, min, floor} = Math;
 
     // global value
     let v0 = 0, theta = 0;
@@ -140,23 +140,35 @@
         CANVAS.moveTo(0, dyMax * SCALE_FACTOR);
         CANVAS.lineTo(1000, dyMax * SCALE_FACTOR);
         CANVAS.stroke();
-        DMAX_OUT.innerHTML = dyMax * SCALE_FACTOR;
+        DMAX_OUT.innerHTML = dyMax.toFixed(3);
         // update target
         CANVAS.strokeStyle = "#FF0000";
         CANVAS.beginPath();
-        CANVAS.moveTo(D1X_INP.value, 0);
-        CANVAS.lineTo(D1X_INP.value, 1000);
+        CANVAS.moveTo(D1X_INP.value * SCALE_FACTOR, 0);
+        CANVAS.lineTo(D1X_INP.value * SCALE_FACTOR, 1000);
         {
             // calculate the target hit
-            let dx1 = D1X_INP.value / 100;
+            let dx1 = D1X_INP.value;
             let t = dx1 / v0x;
             let dy = v0y * t + 0.5 * GA * t*t;
             CANVAS.moveTo(0, dy * SCALE_FACTOR);
             CANVAS.lineTo(1000, dy * SCALE_FACTOR);
-            D1Y_INP.value = dy * 100;
+            D1Y_INP.value = dy;
         }
         CANVAS.stroke();
         // update display
         drawGrid()
+    }
+
+    // repeat for the loading screen
+    let loadingV0 = 5, loadingTheta = 45;
+    let loadingInterval = setInterval(() => {
+        V0_INP.value = (loadingV0 % 20).toFixed(2); THETA_INP.value = loadingTheta % 90;
+        loadingV0 += 0.1; loadingTheta++
+        runResult()
+    }, 100);
+
+    document.onclick = () => {
+        clearInterval(loadingInterval)
     }
 </script>
