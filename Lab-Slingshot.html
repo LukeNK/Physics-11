@@ -26,6 +26,7 @@
         <tr>
             <td>Target distance (in m)</td>
             <td><input type="number" id="d1x"></td>
+            <td>Noted that this field automatically update to match the platform displacement when user-inputed</td>
         </tr>
         <tr>
             <td>Target height (in m)</td>
@@ -41,8 +42,12 @@
     <p>Each dot represents 0.01 seconds (10 ms) interval. The green line is dmax, the red line is the target.</p>
 </body>
 <script>
-    const GA = -9.8067, // gravitational acceleration HAVE NEGATIVE
-        baseHeight = 0.087; // the height of the base of the platform
+    // Physics const (aka hardware real number that as a programmer I understand nothing)
+    const GA = -9.8067; // gravitational acceleration HAVE NEGATIVE
+    const BASE_X = 1, // The length of the launch platform
+        BASE_Y = 1; // the height of the base of the platform
+    let PLAT_X = 0, // use platform X to calculate 
+        PLAT_Y = 0; // Platform Y must be calculated from theta and BASE_X + BASE_Y
 
     // programming const
     const CANVAS = document.getElementById('canvas').getContext('2d'),
@@ -68,6 +73,17 @@
         theta = parseFloat(THETA_INP.value); theta = theta * PI / 180; // convert theta to Radian
         v0x = v0 * cos(theta);
         v0y = v0 * sin(theta); // vector decontruction
+        // calculate base height
+        PLAT_X = cos(theta) * BASE_X
+        PLAT_Y = BASE_Y + sin(theta) * BASE_X;
+    }
+
+    function drawLine(x0, y0, x1, y1, color = '#000000') {
+        CANVAS.strokeStyle = color;
+        CANVAS.beginPath();
+        CANVAS.moveTo(x0 * SCALE_FACTORX, y0 * SCALE_FACTORY);
+        CANVAS.lineTo(x1 * SCALE_FACTORX, y1 * SCALE_FACTORY);
+        CANVAS.stroke()
     }
 
     function drawCircle(x, y, rad = 1) {
@@ -103,7 +119,7 @@
             // all are ready
             updateGraph();
         }
-        if (!D1X_INP.value || !D1Y_INP.value) return; // must have dx1 to continue
+        if (!D1X_INP.value || !D1Y_INP.value) return; // must have d1 to continue
         if (!V0_INP.value && THETA_INP.value) {
             // find v0 from theta
             let minMiss = Infinity, minMissV0 = 0;
@@ -148,37 +164,40 @@
         CANVAS.clearRect(0, 0, CANVAS.width * SCALE_FACTORX, CANVAS.height * SCALE_FACTORY);
 
         parseInp();
-        // loop through t to get d1
+        // loop through t to get d1 for 10 seconds
         let dyMax = 0;
-        for (let t = 0; t < 100; t += 0.01) {
+        for (let t = 0; t < 10; t += 0.01) {
             let dx = v0x * t,
-                dy = v0y * t + 0.5 * GA * t*t;
+                dy = v0y * t + 0.5 * GA * t*t + PLAT_Y;
             if (dy > dyMax) dyMax = dy;
-            drawCircle(dx, dy);
+            drawCircle(dx + PLAT_X, dy);
             if (dy < 0) break;
         }
         // dmax
-        CANVAS.strokeStyle = "#00FF00";
-        CANVAS.beginPath();
-        CANVAS.moveTo(0, dyMax * SCALE_FACTORY);
-        CANVAS.lineTo(CANVAS.width, dyMax * SCALE_FACTORY);
-        CANVAS.stroke();
+        drawLine(
+            0, dyMax, 
+            CANVAS.width, dyMax, 
+            '#00FF00'
+        )
         DMAX_OUT.innerHTML = dyMax.toFixed(3);
         // update target
-        CANVAS.strokeStyle = "#FF0000";
-        CANVAS.beginPath();
-        CANVAS.moveTo(D1X_INP.value * SCALE_FACTORX, 0);
-        CANVAS.lineTo(D1X_INP.value * SCALE_FACTORX, -CANVAS.height);
+        drawLine(
+            D1X_INP.value, 0,
+            D1X_INP.value, -CANVAS.height,
+            '#FF0000'
+        );
         {
             // calculate the target hit
-            let dx1 = D1X_INP.value;
+            let dx1 = D1X_INP.value; // at PLAT_X here somehow
             let t = dx1 / v0x;
-            let dy = v0y * t + 0.5 * GA * t*t;
-            CANVAS.moveTo(0, dy * SCALE_FACTORY);
-            CANVAS.lineTo(CANVAS.width, dy * SCALE_FACTORY);
+            let dy = v0y * t + 0.5 * GA * t*t + PLAT_Y;
+            drawLine(
+                0, dy,
+                CANVAS.width, dy,
+                '#FF0000'
+            );
             D1Y_INP.value = dy;
         }
-        CANVAS.stroke();
         // update display
         drawGrid()
     }
