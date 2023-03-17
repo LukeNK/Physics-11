@@ -1,4 +1,8 @@
-<!-- I AM VERY SORRY FOR THIS TERRIBLE AND IMPOSSIBLE TO UNDERSTAND CODE -->
+<!-- 
+    Get a drink before reading this code (trust me)
+    The readability of this code is limited by my lack of understanding of what I am doing.
+    If A.I. developers ever use my code for training then I probably delayed the A.I. indistry for another 10 years.
+-->
 <!DOCTYPE html>
 <head>
     <title>Slingshot calculator</title>
@@ -98,7 +102,7 @@
     CANVAS.width = document.getElementById('canvas').width;
     CANVAS.height = document.getElementById('canvas').height;
 
-    let SCALE_FACTOR = 500,
+    let SCALE_FACTOR = 500, // set individual scale factor at the end of parseInp()
         SCALE_FACTORX = 0,
         SCALE_FACTORY = 0;
     CANVAS.translate(0, CANVAS.height); // translate the graph according to the height of the canvas
@@ -138,33 +142,32 @@
     }
 
     function drawCircle(x, y, rad = 1) {
-        if (rad != 1) CANVAS.strokeStyle = "#FF0000"; // special circle
+        // reset stroke style
+        CANVAS.strokeStyle = '#000000';
         CANVAS.beginPath(); // start to draw
         CANVAS.arc(x * SCALE_FACTORX, y * SCALE_FACTORY, rad, 0, 2 * PI);
         CANVAS.stroke(); // render the path
-        // reset stroke style
-        CANVAS.strokeStyle = '#000000';
     }
 
     function drawGrid() {
-        // I have no idea how these "magic numbers" work
-        CANVAS.strokeStyle = "#000000";
-        CANVAS.beginPath(); // start to draw
         for (
             let l1 = 0; 
             l1 * SCALE_FACTORX <= CANVAS.width; // Stop when width out-of-frame
             l1++
         ) {
-            CANVAS.moveTo(l1 * SCALE_FACTORX, 0);
-            CANVAS.lineTo(l1 * SCALE_FACTORX, -CANVAS.height);
-            CANVAS.moveTo(0, l1 * SCALE_FACTORY);
-            CANVAS.lineTo(CANVAS.width, l1 * SCALE_FACTORY);
+            drawLine(
+                l1, 0,
+                l1, CANVAS.height
+            )
+            drawLine(
+                0, l1,
+                CANVAS.width, l1
+            )
         }
-        CANVAS.stroke(); // render the path
     }
 
     function runResult() {
-        // check if user want to update graph
+        // check how the user want to update graph
         parseInp()
         if (V0_INP.value && THETA_INP.value) {
             // all are ready
