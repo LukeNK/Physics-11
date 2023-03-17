@@ -37,11 +37,7 @@
         </tr>
         <tr>
             <td><input type="checkbox"></td>
-            <td>Scale factor (x and y)</td>
-        </tr>
-        <tr>
-            <td><input type="checkbox"></td>
-            <td>Scale factor (x and y)</td>
+            <td>CANVAS.width and CANVAS.height</td>
         </tr>
     </table>
 
@@ -80,7 +76,7 @@
     </table>
 
     <canvas id="canvas" width="1000", height="600"></canvas>
-    <p>Each dot represents 0.01 seconds (10 ms) interval. The green line is dmax, the red line is the target, purple is the launch platform and the slingshot. The grid is 1m  * 1m.</p>
+    <p>Each dot represents 0.01 seconds (10 ms) interval. The green line is dmax, the red line is the target, purple is the launch platform and the slingshot, blue is the visualization of the launch angle. The grid is 1m * 1m.</p>
 </body>
 <script>
     // Physics const (aka hardware real number that as a programmer I understand nothing)
@@ -102,11 +98,11 @@
     CANVAS.width = document.getElementById('canvas').width;
     CANVAS.height = document.getElementById('canvas').height;
 
-    let SCALE_FACTOR = 500;
-    let SCALE_FACTORX = 0; 
-    let SCALE_FACTORY = 0;
+    let SCALE_FACTOR = 500,
+        SCALE_FACTORX = 0,
+        SCALE_FACTORY = 0;
     CANVAS.translate(0, CANVAS.height); // translate the graph according to the height of the canvas
-    const {PI, abs, sin, cos, tan, sqrt, max, min, floor} = Math;
+    const {PI, abs, sin, cos, tan, sqrt, max, min, floor, random} = Math;
 
     // global value
     let v0 = 0, theta = 0;
@@ -217,6 +213,8 @@
     function updateGraph() {
         // clear graph
         CANVAS.clearRect(0, 0, CANVAS.width * SCALE_FACTORX, CANVAS.height * SCALE_FACTORY);
+        // update grid
+        drawGrid()
 
         parseInp();
         // loop through t to get d1 for 10 seconds
@@ -268,13 +266,17 @@
                 PLAT_X, PLAT_Y,
                 '#C300ff'
             );
+            // draw shot angle
+            drawLine(
+                PLAT_X, PLAT_Y,
+                PLAT_X + 1 / sin(theta), PLAT_Y + 1 / cos(theta),
+                '#0000ff'
+            );
         }
-        // update grid
-        drawGrid()
     }
 
     // repeat for the loading screen
-    let loadingV0 = 5, loadingTheta = 45;
+    let loadingV0 = floor(random() * 15), loadingTheta = floor(random() * 90);
     let loadingInterval = setInterval(() => {
         V0_INP.value = (loadingV0 % 15).toFixed(2); THETA_INP.value = loadingTheta % 90;
         loadingV0 += 0.1; loadingTheta++
