@@ -7,14 +7,25 @@
 <head>
     <title>Slingshot calculator</title>
     <style>
+        body {
+            background-color: #181A1B;
+        }
+        body * {
+            color: #ffffff
+        }
+
+        button {
+            width: 100%;
+        }
+        button, input {
+            color: #000000;
+        }
+
         #checklist {
             border-collapse: collapse;
         }
         #checklist td {
             border: 1px solid black;
-        }
-        button {
-            width: 100%;
         }
     </style>
 </head>
@@ -133,7 +144,7 @@
         SCALE_FACTORY = -SCALE_FACTOR; // scale factor negative to flip the graph
     }
 
-    function drawLine(x0, y0, x1, y1, color = '#000000') {
+    function drawLine(x0, y0, x1, y1, color = '#FFFFFF') {
         CANVAS.strokeStyle = color;
         CANVAS.beginPath();
         CANVAS.moveTo(x0 * SCALE_FACTORX, y0 * SCALE_FACTORY);
@@ -143,7 +154,7 @@
 
     function drawCircle(x, y, rad = 1) {
         // reset stroke style
-        CANVAS.strokeStyle = '#000000';
+        CANVAS.strokeStyle = '#FFFFFF';
         CANVAS.beginPath(); // start to draw
         CANVAS.arc(x * SCALE_FACTORX, y * SCALE_FACTORY, rad, 0, 2 * PI);
         CANVAS.stroke(); // render the path
