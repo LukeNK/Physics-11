@@ -114,8 +114,8 @@
     let v0x = 0, v0y = 0; // vector decontruction
     function parseInp() {
         // physics variable
-        v0 = parseFloat(V0_INP.value);
-        theta = parseFloat(THETA_INP.value); theta = theta * PI / 180; // convert theta to Radian
+        v0 = parseFloat(V0_INP.value).toFixed(2);
+        theta = parseFloat(THETA_INP.value).toFixed(2); theta = theta * PI / 180; // convert theta to Radian
         v0x = v0 * cos(theta);
         v0y = v0 * sin(theta); // vector decontruction
         // calculate platform height
@@ -181,7 +181,7 @@
             for (
                 V0_INP.value = 1;
                 V0_INP.value < 50;
-                V0_INP.value = parseFloat(V0_INP.value) + 0.1
+                V0_INP.value = parseFloat(V0_INP.value) + 0.01
             ) {
                 updateGraph();
                 let amiss = abs(targetDy - D1Y_INP.value)
@@ -226,7 +226,6 @@
             let dx = v0x * t,
                 dy = v0y * t + 0.5 * GA * t*t + PLAT_Y;
             if (dy > dyMax) dyMax = dy;
-            // special circle for the first one
             drawCircle(dx + PLAT_X, dy);
             if (dy < 0) break;
         }
@@ -253,7 +252,7 @@
                 CANVAS.width, dy,
                 '#FF0000'
             );
-            D1Y_INP.value = dy || 0;
+            D1Y_INP.value = (dy || 0).toFixed(2);
         }
         // update initial displacement
         {
